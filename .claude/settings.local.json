@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:\\\\Users\\\\MMLAPTOP.COM\\\\Desktop\\\\tamoor\\\\titaniumapp\\\\lib\\\\screens\")",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter devices *)",
+      "Bash(flutter run *)",
+      "Bash(flutter test *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\MMLAPTOP.COM\\Desktop\\tamoor\\titaniumapp\\lib"
+    ]
+  }
+}

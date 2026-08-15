@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dart format *)",
+      "Bash(flutter build *)",
+      "Bash(curl -s -i --max-time 15 -X POST https://titanum-app-fdy29.ondigitalocean.app/v2/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@titaniumcars.com\",\"password\":\"Titanium@285\",\"usertype\":\"superadmin\",\"address\":\"123 Main St, Karachi\",\"lat\":24.8607,\"lng\":67.0011}')",
+      "Bash(flutter --version)",
+      "Bash(flutter devices *)",
+      "Bash(flutter run *)"
+    ]
+  }
+}
