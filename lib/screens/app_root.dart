@@ -33,7 +33,12 @@ class _AppRootState extends ConsumerState<AppRoot> {
     // resolves instantly.
     final sessionCheck = ref.read(authControllerProvider.notifier).restoreSession();
     await Future.delayed(const Duration(seconds: 2));
-    await sessionCheck;
+    try {
+      await sessionCheck;
+    } catch (_) {
+      // A corrupted/unreadable stored session shouldn't leave the user
+      // stuck on the splash screen forever — fall through to login.
+    }
     if (!mounted) return;
     setState(() => _checkingSession = false);
   }
