@@ -4,7 +4,7 @@ import '../storage/token_storage.dart';
 import 'api_exception.dart';
 import 'jwt_utils.dart';
 
-const apiBaseUrl = 'https://titanum-app-fdy29.ondigitalocean.app';
+const apiBaseUrl = 'https://starfish-app-cv66q.ondigitalocean.app/';
 
 class AuthHeaderInterceptor extends Interceptor {
   AuthHeaderInterceptor(this._tokenStorage);

@@ -93,12 +93,17 @@ class VehicleController extends AsyncNotifier<VehiclesPageState> {
   Future<Vehicle> updateVehicle(
     String id, {
     String? color,
+    String? notes,
     String? location,
     String? status,
   }) async {
-    final updated = await ref
-        .read(vehicleRepositoryProvider)
-        .updateVehicle(id, color: color, location: location, status: status);
+    final updated = await ref.read(vehicleRepositoryProvider).updateVehicle(
+          id,
+          color: color,
+          notes: notes,
+          location: location,
+          status: status,
+        );
 
     final current = state.value;
     if (current != null) {

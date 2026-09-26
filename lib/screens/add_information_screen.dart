@@ -69,16 +69,23 @@ class _AddInformationScreenState extends ConsumerState<AddInformationScreen> {
       _errorMessage = null;
     });
 
-    // Only `color` is a confirmed-editable field on the real inventory API
+    // Only `color` and `notes` are persisted by the real inventory API
     // (via `PUT /v2/api/inventory/:id`); everything else here stays a
     // local-only annotation on top of that, same as before.
     Vehicle base = widget.vehicle;
     final newColor = _colorController.text.trim();
-    if (newColor != widget.vehicle.color) {
+    final newNotes = _notesController.text.trim();
+    final colorChanged = newColor != widget.vehicle.color;
+    final notesChanged = newNotes != widget.vehicle.notes;
+    if (colorChanged || notesChanged) {
       try {
         base = await ref
             .read(vehicleControllerProvider.notifier)
-            .updateVehicle(widget.vehicle.id, color: newColor);
+            .updateVehicle(
+              widget.vehicle.id,
+              color: colorChanged ? newColor : null,
+              notes: notesChanged ? newNotes : null,
+            );
       } on ApiException catch (e) {
         if (!mounted) return;
         setState(() {
@@ -97,7 +104,7 @@ class _AddInformationScreenState extends ConsumerState<AddInformationScreen> {
       variant: _variantController.text.trim(),
       manufacturingYear: _manufacturingYearController.text.trim(),
       color: newColor,
-      notes: _notesController.text.trim(),
+      notes: newNotes,
       lastUpdated: 'Just now',
       updatedBy: 'You',
     );

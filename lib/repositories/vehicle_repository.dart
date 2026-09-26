@@ -61,6 +61,7 @@ class VehicleRepository {
   Future<Vehicle> updateVehicle(
     String id, {
     String? color,
+    String? notes,
     String? location,
     String? status,
   }) async {
@@ -69,6 +70,7 @@ class VehicleRepository {
         '$_inventoryPath/$id',
         data: {
           if (color != null) 'color': color,
+          if (notes != null) 'notes': notes,
           if (location != null) 'location': location,
           if (status != null) 'status': status,
         },

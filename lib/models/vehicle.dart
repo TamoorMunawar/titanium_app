@@ -67,6 +67,7 @@ class Vehicle {
       currentLocation: _locationNameFrom(json['location']) ?? 'Unassigned',
       lastUpdated: updatedAt != null ? _formatDate(updatedAt) : '',
       updatedBy: json['updatedBy'] as String? ?? '',
+      notes: json['notes'] as String? ?? '',
     );
   }
 
