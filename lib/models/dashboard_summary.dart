@@ -1,3 +1,57 @@
+/// The dashboard API (`GET /v2/api/dashboard`) is inconsistent about whether
+/// a "text" field comes back as a plain string or as an object — e.g. a
+/// location as `{id, name}`, or a user as `{id, firstName, lastName}`. Every
+/// `json[...] as String?` read in this file goes through this helper instead
+/// of a direct cast, so a stray object never throws
+/// `'_Map<String, dynamic>' is not a subtype of type 'String?'`. It
+/// best-efforts a human-readable string out of common shapes and otherwise
+/// returns null, letting callers apply their own `?? ''` fallback.
+String? _stringFrom(Object? value) {
+  if (value == null) return null;
+  if (value is String) return value;
+  if (value is num || value is bool) return value.toString();
+  if (value is Map) {
+    for (final key in const [
+      'name',
+      'label',
+      'title',
+      'address',
+      'fullName',
+      'value',
+    ]) {
+      final candidate = value[key];
+      if (candidate is String) return candidate;
+    }
+    final firstName = value['firstName'];
+    final lastName = value['lastName'];
+    if (firstName is String || lastName is String) {
+      final joined = [
+        if (firstName is String) firstName,
+        if (lastName is String) lastName,
+      ].join(' ').trim();
+      if (joined.isNotEmpty) return joined;
+    }
+  }
+  return null;
+}
+
+/// Companion to [_stringFrom] for numeric fields that have been seen coming
+/// back as numeric strings (or missing) rather than JSON numbers.
+int? _intFrom(Object? value) {
+  if (value == null) return null;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
+/// Companion to [_intFrom] for the file's `double` reads.
+double? _doubleFrom(Object? value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+
 class DashboardStat {
   const DashboardStat({
     required this.total,
@@ -9,11 +63,11 @@ class DashboardStat {
 
   factory DashboardStat.fromJson(Map<String, dynamic> json) {
     return DashboardStat(
-      total: json['total'] as int? ?? 0,
-      changePercent: (json['changePercent'] as num?)?.toDouble(),
-      changeCount: json['changeCount'] as int?,
-      soldCount: json['soldCount'] as int?,
-      activeCount: json['activeCount'] as int?,
+      total: _intFrom(json['total']) ?? 0,
+      changePercent: _doubleFrom(json['changePercent']),
+      changeCount: _intFrom(json['changeCount']),
+      soldCount: _intFrom(json['soldCount']),
+      activeCount: _intFrom(json['activeCount']),
     );
   }
 
@@ -47,8 +101,8 @@ class InventoryTypeCount {
 
   factory InventoryTypeCount.fromJson(Map<String, dynamic> json) {
     return InventoryTypeCount(
-      type: json['type'] as String? ?? '',
-      count: json['count'] as int? ?? 0,
+      type: _stringFrom(json['type']) ?? '',
+      count: _intFrom(json['count']) ?? 0,
     );
   }
 
@@ -68,13 +122,13 @@ class DashboardActivity {
 
   factory DashboardActivity.fromJson(Map<String, dynamic> json) {
     return DashboardActivity(
-      id: json['id'] as String? ?? '',
-      message: json['message'] as String? ?? '',
-      action: json['action'] as String? ?? '',
-      actorName: json['actorName'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      id: _stringFrom(json['id']) ?? '',
+      message: _stringFrom(json['message']) ?? '',
+      action: _stringFrom(json['action']) ?? '',
+      actorName: _stringFrom(json['actorName']) ?? '',
+      createdAt: DateTime.tryParse(_stringFrom(json['createdAt']) ?? '') ??
           DateTime.now(),
-      timeAgo: json['timeAgo'] as String? ?? '',
+      timeAgo: _stringFrom(json['timeAgo']) ?? '',
     );
   }
 
@@ -101,27 +155,21 @@ class DashboardRecentInventoryItem {
 
   factory DashboardRecentInventoryItem.fromJson(Map<String, dynamic> json) {
     return DashboardRecentInventoryItem(
-      id: json['id'] as String? ?? '',
-      type: json['type'] as String? ?? '',
-      model: json['model'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      chassisNo: json['chassisNo'] as String? ?? '',
-      color: json['color'] as String? ?? '',
+      id: _stringFrom(json['id']) ?? '',
+      type: _stringFrom(json['type']) ?? '',
+      model: _stringFrom(json['model']) ?? '',
+      description: _stringFrom(json['description']) ?? '',
+      chassisNo: _stringFrom(json['chassisNo']) ?? '',
+      color: _stringFrom(json['color']) ?? '',
       year: json['year']?.toString() ?? '',
-      location: _locationNameFrom(json['location']),
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      // The `location` field varies across endpoints: `null`, a plain name
+      // string, or `{id, name}` once a real Location has been assigned (as
+      // returned by `PUT /v2/api/inventory/:id`); `_stringFrom` covers all
+      // three shapes.
+      location: _stringFrom(json['location']),
+      createdAt: DateTime.tryParse(_stringFrom(json['createdAt']) ?? '') ??
           DateTime.now(),
     );
-  }
-
-  /// The `location` field varies across endpoints: `null`, a plain name
-  /// string, or `{id, name}` once a real Location has been assigned (as
-  /// returned by `PUT /v2/api/inventory/:id`).
-  static String? _locationNameFrom(Object? location) {
-    if (location == null) return null;
-    if (location is String) return location;
-    if (location is Map<String, dynamic>) return location['name'] as String?;
-    return null;
   }
 
   final String id;
@@ -147,10 +195,10 @@ class DashboardLastLocation {
 
   factory DashboardLastLocation.fromJson(Map<String, dynamic> json) {
     return DashboardLastLocation(
-      address: json['address'] as String? ?? '',
-      lat: (json['lat'] as num?)?.toDouble() ?? 0,
-      lng: (json['lng'] as num?)?.toDouble() ?? 0,
-      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
+      address: _stringFrom(json['address']) ?? '',
+      lat: _doubleFrom(json['lat']) ?? 0,
+      lng: _doubleFrom(json['lng']) ?? 0,
+      updatedAt: DateTime.tryParse(_stringFrom(json['updatedAt']) ?? '') ??
           DateTime.now(),
     );
   }
@@ -187,13 +235,13 @@ class DashboardSummary {
       totalLocations: DashboardStat.fromJson(
         stats['totalLocations'] as Map<String, dynamic>,
       ),
-      inventoryByType: (details['inventoryByType'] as List)
+      inventoryByType: (details['inventoryByType'] as List? ?? [])
           .map((e) => InventoryTypeCount.fromJson(e as Map<String, dynamic>))
           .toList(),
-      recentActivity: (details['recentActivity'] as List)
+      recentActivity: (details['recentActivity'] as List? ?? [])
           .map((e) => DashboardActivity.fromJson(e as Map<String, dynamic>))
           .toList(),
-      recentInventory: (details['recentInventory'] as List)
+      recentInventory: (details['recentInventory'] as List? ?? [])
           .map((e) => DashboardRecentInventoryItem.fromJson(
                 e as Map<String, dynamic>,
               ))
