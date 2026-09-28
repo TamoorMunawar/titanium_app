@@ -108,10 +108,20 @@ class DashboardRecentInventoryItem {
       chassisNo: json['chassisNo'] as String? ?? '',
       color: json['color'] as String? ?? '',
       year: json['year']?.toString() ?? '',
-      location: json['location'] as String?,
+      location: _locationNameFrom(json['location']),
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
     );
+  }
+
+  /// The `location` field varies across endpoints: `null`, a plain name
+  /// string, or `{id, name}` once a real Location has been assigned (as
+  /// returned by `PUT /v2/api/inventory/:id`).
+  static String? _locationNameFrom(Object? location) {
+    if (location == null) return null;
+    if (location is String) return location;
+    if (location is Map<String, dynamic>) return location['name'] as String?;
+    return null;
   }
 
   final String id;
