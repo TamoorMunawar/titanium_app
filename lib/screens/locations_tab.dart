@@ -168,6 +168,7 @@ class _LocationsTabState extends ConsumerState<LocationsTab> {
           right: 16,
           bottom: 16,
           child: FloatingActionButton(
+            heroTag: 'locations_tab_fab',
             backgroundColor: _accentBlue,
             onPressed: _addLocation,
             child: const Icon(Icons.add, color: Colors.white),

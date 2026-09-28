@@ -191,6 +191,7 @@ class _UsersTabState extends ConsumerState<UsersTab> {
           right: 16,
           bottom: 16,
           child: FloatingActionButton(
+            heroTag: 'users_tab_fab',
             backgroundColor: _accentBlue,
             onPressed: _addUser,
             child: const Icon(Icons.add, color: Colors.white),
